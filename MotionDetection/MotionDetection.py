@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import operator
 import copy
+import pygame
 
 global frame_inter
 frame_inter=5
@@ -74,7 +75,6 @@ def Dict_upgrade_inv(object_cont,object):
         distance.append(dis)
     return(np.argmin(distance),min(distance))
 
-
 def Dict_Stop_upgrade(object_id_move,object_id_stop):
     key_save=[]
     key_save_left=[]
@@ -122,7 +122,8 @@ def time_count_upgrade(object_id_stop,time_count_dict,frame_inter):
             time_count_loss=0
             time_name=object_id_stop[key].get_name()
             time_position=object_id_stop[key].get_current_CenterPosition()
-            time_tag=[list(time_position),[time_frame,time_count_loss]]
+            time_rect_cnt=object_id_stop[key].get_contours_rect()
+            time_tag=[list(time_position),[time_frame,time_count_loss],list(time_rect_cnt)]
             time_count_dict[time_name]=time_tag
     else:
         key_save=[]
@@ -154,7 +155,8 @@ def time_count_upgrade(object_id_stop,time_count_dict,frame_inter):
             time_count_loss=0
             time_name=object_id_stop[key].get_name()
             time_position=object_id_stop[key].get_current_CenterPosition()
-            time_tag=[list(time_position),[time_frame,time_count_loss]]
+            time_rect_cnt=object_id_stop[key].get_contours_rect()
+            time_tag=[list(time_position),[time_frame,time_count_loss],list(time_rect_cnt)]
             time_count_dict[time_name]=time_tag
 
         for key in time_count_dict:
@@ -164,9 +166,11 @@ def time_count_upgrade(object_id_stop,time_count_dict,frame_inter):
             del time_count_dict[key]
     return time_count_dict
 
-def main(path,image_roi,back_frame_find):
+def main(path,image_roi,WarnningTime,back_frame_find):
     camera=cv2.VideoCapture(path)
     time_count_dict={}
+    pygame.mixer.init()
+    track = pygame.mixer.music.load("resource\\warning.wav") 
     global fps
     global a
     global b
@@ -355,10 +359,23 @@ def main(path,image_roi,back_frame_find):
             time_count_dict=time_count_upgrade(object_id_stop,time_count_dict,frame_inter)
         for key in time_count_dict:
             time_s=time_count_dict[key][1][0]/(fps)      
-            x=time_count_dict[key][0][0]+roi_y
-            y=time_count_dict[key][0][1]+roi_x
-            cv2.putText(frame,str(time_s)+" s",(x,y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),1)
+            x=time_count_dict[key][2][0]
+            y=time_count_dict[key][2][1]
+            w=time_count_dict[key][2][2]
+            h=time_count_dict[key][2][3]
+            cv2.putText(frame,str(time_s)+" s",(roi_y+x+40,roi_x+y+h/2),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2)
             print key+":"+str(time_s)+" s"
+            if time_s>=WarnningTime:
+                cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(0,0,255),2)
+                image_warning=cv2.imread("resource//warning.png")
+                (warning_h,warning_w,channel)=image_warning.shape
+                frame[roi_x+y-33:roi_x+y-33+warning_h,roi_y+x:roi_y+x+warning_w]=image_warning
+                #cv2.putText(frame,"warning!",(roi_y+x+20,roi_x+y-15),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3)                                 
+                pygame.mixer.music.play()  
+                
+            else:
+                cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(255,0,0),2)
+            
 
         #print "object_id_stop"+str(len(object_id_stop))
         for key1 in object_id_stop:
@@ -374,7 +391,7 @@ def main(path,image_roi,back_frame_find):
             #print object_id_stop[key2].get_name()+":"+str((x,y))
             #cv2.rectangle(frame_background1,(x,y),(x+w,y+h),(0,0,255),2)
             #cv2.putText(frame_background1,object_id_stop[key1].get_name(),(x,y+h/2),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),1)
-            cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(0,0,255),2)
+            #cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(0,0,255),2)
             #cv2.putText(frame,object_id_stop[key1].get_name(),(roi_y+x,roi_x+y+h/2),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),1)
 
         #print "object_id_move"+str(len(object_id_move))
@@ -388,14 +405,14 @@ def main(path,image_roi,back_frame_find):
             h=position[3]
             #print object_id_move[key2].get_name()+":"+str((x,y))
             #cv2.rectangle(frame_background1,(x,y),(x+w,y+h),(0,255,0),2)      
-            cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(0,255,0),2)
+            cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(255,0,0),2)
             #cv2.putText(frame,object_id_move[key2].get_name(),(roi_y+x,roi_x+y+h/2),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),1)
 
         #cv2.imshow("frame_background1",frame_background1)
         cv2.imshow("frame",frame)
-        if cv2.waitKey(100) & 0xff == ord(" "): 
+        if cv2.waitKey(50) & 0xff == ord(" "): 
             cv2.waitKey(0)
-        if cv2.waitKey(100) & 0xff == ord("q"):
+        if cv2.waitKey(50) & 0xff == ord("q"):
              break
     cv2.destroyAllWindows()
     camera.release()        

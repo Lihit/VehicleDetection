@@ -1,6 +1,7 @@
 
 import cv2                                    
 import numpy as np  
+import pygame
 def main1(frame_in):
     #image_path = "F://python_image//fu.png"  
     frame     = frame_in.copy()    
@@ -41,3 +42,9 @@ def main(path):
         if cv2.waitKey(1) & 0xff == ord(" "): 
             break
     cv2.destroyAllWindows()
+
+def main3(): 
+    pygame.mixer.init()  
+    print("play music")  
+    track = pygame.mixer.music.load("resource\\warning.wav")  
+    pygame.mixer.music.play()  
