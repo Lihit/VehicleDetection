@@ -48,7 +48,7 @@ class MotionObject(object):
     def Distance_FirstAndCurrent(self):
         return cal_distance(self.first_CenterPosition,self.current_CenterPosition)    
 
-  
+
 def Dict_upgrade(position,dict):
     distance=[]
     newdict={}
@@ -170,7 +170,7 @@ def main(path,image_roi,WarnningTime,back_frame_find):
     camera=cv2.VideoCapture(path)
     time_count_dict={}
     pygame.mixer.init()
-    track = pygame.mixer.music.load("resource\\warning.wav") 
+    track = pygame.mixer.music.load("./resource/warning.wav") 
     global fps
     global a
     global b
@@ -196,7 +196,7 @@ def main(path,image_roi,WarnningTime,back_frame_find):
     cv2.imshow("frame_background_find",frame)
 
     global frame_background
-    fps=int(camera.get(cv2.CAP_PROP_FPS))
+    fps=25
     roi_x=int(frame.shape[0]*a)
     roi_y=int(frame.shape[1]*c)
     roi_x1=int(frame.shape[0]*b)
@@ -240,7 +240,7 @@ def main(path,image_roi,WarnningTime,back_frame_find):
         #frame_close=cv2.morphologyEx(frame_dilate,cv2.MORPH_CLOSE,es2)
         cv2.imshow("frame_dilate", frame_dilate)
 
-        image,cnts, hierarchy = cv2.findContours(frame_dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts, hierarchy = cv2.findContours(frame_dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for c in cnts:
             cont_area=cv2.contourArea(c)
@@ -367,7 +367,7 @@ def main(path,image_roi,WarnningTime,back_frame_find):
             print key+":"+str(time_s)+" s"
             if time_s>=WarnningTime:
                 cv2.rectangle(frame,(roi_y+x,roi_x+y),(roi_y+x+w,roi_x+y+h),(0,0,255),2)
-                image_warning=cv2.imread("resource//warning.png")
+                image_warning=cv2.imread("./resource/warning.png")
                 (warning_h,warning_w,channel)=image_warning.shape
                 frame[roi_x+y-33:roi_x+y-33+warning_h,roi_y+x:roi_y+x+warning_w]=image_warning
                 #cv2.putText(frame,"warning!",(roi_y+x+20,roi_x+y-15),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),3)                                 
@@ -417,4 +417,5 @@ def main(path,image_roi,WarnningTime,back_frame_find):
     cv2.destroyAllWindows()
     camera.release()        
 
+    
 

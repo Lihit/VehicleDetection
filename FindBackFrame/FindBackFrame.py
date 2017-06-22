@@ -26,7 +26,7 @@ def FindBackFrame(path,frame_inter):
         #cv2.imshow("diff2", diff)
         diff = cv2.dilate(diff, es, iterations = 2)
         diff=cv2.morphologyEx(diff,cv2.MORPH_CLOSE,es2)
-        image, cnts, hierarchy = cv2.findContours(diff.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cnts, hierarchy = cv2.findContours(diff.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cont_list=[]
         for c in cnts:
             area=cv2.contourArea(c)
